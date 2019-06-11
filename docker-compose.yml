@@ -1,4 +1,8 @@
 version: '3.2'
+networks:
+    app-tier:
+        driver: bridge
+
 services:
     php-apache:
         build:
@@ -16,6 +20,8 @@ services:
         depends_on:
             - 'mysql'
         restart: unless-stopped
+        networks:
+            - app-tier
 
     mysql:
         image: mysql:5.6
@@ -27,3 +33,23 @@ services:
             MYSQL_PASSWORD: 'testpassword'
             MYSQL_DATABASE: 'testdb'
         hostname: mysql
+        networks:
+            - app-tier
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        ports:
+            - 8080:80
+        links:
+            - mysql
+        environment:
+            PMA_HOST: mysql
+        networks:
+            - app-tier
+
+    memcached:
+        image: bitnami/memcached:latest
+        ports:
+            - 11211:11211
+        hostname: memcached
+        networks:
+            - app-tier
